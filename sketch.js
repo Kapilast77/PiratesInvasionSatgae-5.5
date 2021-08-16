@@ -16,6 +16,10 @@ var brokenBoatSpritedata, brokenBoatSpritesheet;
 var waterSplashAnimation = [];
 var waterSplashSpritedata, waterSplashSpritesheet;
 
+var backgroundmusic,watersound,piratelaughsound,cannonexplosion;
+
+var isLaughing = false;
+
 var isGameOver = false;
 
 function preload() {
@@ -27,6 +31,10 @@ function preload() {
   brokenBoatSpritesheet = loadImage("assets/boat/broken_boat.png");
   waterSplashSpritedata = loadJSON("assets/water_splash/water_splash.json");
   waterSplashSpritesheet = loadImage("assets/water_splash/water_splash.png");
+  backgroundmusic = loadSound("assets/background_music.mp3");
+  watersound = loadSound("assets/cannon_water.mp3");
+  piratelaughsound = loadSound("assets/pirate_laugh.mp3");
+  cannonexplosion = loadSound("assets/cannon_explosion.mp3")
 }
 
 function setup() {
@@ -63,7 +71,10 @@ function setup() {
 function draw() {
   background(189);
   image(backgroundImg, 0, 0, width, height);
-
+ if (!backgroundmusic.isPlaying()) {
+   backgroundmusic.play();
+   backgroundmusic.setVolume(0.2)
+ }
   Engine.update(engine);
   ground.display();
 
@@ -112,6 +123,7 @@ function showCannonBalls(ball, index) {
   ball.animate();
   if (ball.body.position.x >= width || ball.body.position.y >= height - 50) {
     if (!ball.isSink) {
+      watersound.play();
       ball.remove(index);
     }
   }
@@ -147,6 +159,11 @@ function showBoats() {
       boats[i].animate();
       var collision = Matter.SAT.collides(tower.body, boats[i].body);
       if (collision.collided && !boats[i].isBroken) {
+        if (!isLaughing&&!piratelaughsound.isPlaying()) {
+          piratelaughsound.play();
+          isLaughing=true;
+          
+        }
         isGameOver = true;
         gameOver();
       }
@@ -159,6 +176,7 @@ function showBoats() {
 
 function keyReleased() {
   if (keyCode === DOWN_ARROW && !isGameOver) {
+    cannonexplosion.play();
     balls[balls.length - 1].shoot();
   }
 }
